@@ -1,146 +1,662 @@
 <!DOCTYPE HTML>
-<!--
-	Solid State by HTML5 UP
-	html5up.net | @ajlkn
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
--->
-<html>
-	<head>
-		<title>Portfolio: Peter Oldhammer</title>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-		<link rel="stylesheet" href="assets/css/main.css" />
-		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
-	</head>
-	<body class="is-preload">
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Peter Oldhammer — Game Developer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+    <style>
+        /* ===================== RESET ===================== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
 
-		<!-- Page Wrapper -->
-			<div id="page-wrapper">
+        :root {
+            --bg:       #07090f;
+            --bg2:      #0b0f1a;
+            --card:     #0e1320;
+            --border:   #162035;
+            --cyan:     #00c8ff;
+            --cyan-dim: rgba(0,200,255,0.08);
+            --cyan-mid: rgba(0,200,255,0.25);
+            --text:     #7a90b0;
+            --light:    #c8d8f0;
+            --white:    #eef3ff;
+        }
 
-				<!-- Header -->
-					<header id="header" class="alt">
-						<h1><a href="index.html">Portfolio</a></h1>
-					</header>
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
 
-				<!-- Banner -->
-					<section id="banner">
-						<div class="inner">
-							<div class="logo"><span class="icon fa-address-card"></span></div>
-							<h2>Portfolio</h2>
-							<p>Representation of some of the works of Peter Oldhammer</a></p>
-						</div>
-					</section>
+        a { color: var(--cyan); text-decoration: none; }
 
-				<!-- Wrapper -->
-					<section id="wrapper">
-						<!-- One -->
-							<section id="one" class="wrapper spotlight style1">
-								<div class="inner">
-									<a href="#" class="image"><img src="images/memory.png" alt="" /></a>
-									<div class="content">
-										<h2 class="major">Memory Quest</h2>
-										<p>Digital version of a board game developed by a indie designer. Did all of the code work and most of the design. Programmed using the Godot Engine.</p>
-										<a href="https://piddau.itch.io/memory-quest" class="special">Learn more</a>
-									</div>
-								</div>
-							</section>
+        /* ===================== NAV ===================== */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.2rem 3rem;
+            background: rgba(7,9,15,0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
 
-						<!-- Two -->
-							<section id="two" class="wrapper alt spotlight style2">
-								<div class="inner">
-									<a href="#" class="image"><img src="images/ascension.png" alt="" /></a>
-									<div class="content">
-										<h2 class="major">Ascension</h2>
-										<p>Made during a Ludum Dare Game Jam. Its a top down hack and slash with possibility to play in split screen. Basic AI and level system. Made using Unreal Engine 4 and its Blueprint feature.</p>
-										<p>After the Jam, I remade most of it in C++ and started adding networking using Steam as a matchmaking platform. Not finished</p>
-										<a href="https://piddau.itch.io/ascension" class="special">Learn more</a>
-									</div>
-								</div>
-							</section>
+        .nav-logo {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--cyan);
+            letter-spacing: 0.05em;
+        }
 
-						<!-- Three -->
-							<section id="three" class="wrapper spotlight style3">
-								<div class="inner">
-									<a href="#" class="image"><img src="images/sirjump.png" alt="" /></a>
-									<div class="content">
-										<h2 class="major">Sir Jump!</h2>
-										<p>A 2D sidescroller, made basically as a learning project to try out GDevelop, a game engine that uses an event based coding system. Did all of it except some images.</p>
-										<a href="https://piddau.itch.io/sirjump" class="special">Learn more</a>
-									</div>
-								</div>
-							</section>
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
 
-							<section id="four" class="wrapper alt spotlight style2">
-								<div class="inner">
-									<a href="#" class="image"><img src="images/tower.png" alt="" /></a>
-									<div class="content">
-										<h2 class="major">25 Years of Defense</h2>
-										<p>A game made for a game jam for a website called FZ. Created using Godot Engine using C#. Player needs to defend its castle from constant attacks. Used project to learn more about shaders</p>
-										<a href="https://piddau.itch.io/25-years-of-defense" class="special">Learn more</a>
-									</div>
-								</div>
-							</section>
-						
-						<!-- Four -->
-							<section id="one" class="wrapper spotlight style1">
-								<div class="inner">
-									<a href="#" class="image"><img src="images/mathrpg.png" alt="" /></a>
-									<div class="content">
-										<h2 class="major">Math Quest</h2>
-										<p>A game I made specifically for my son to improve his math. Thought it would be more fun than just writing endless numbers. Did all coding while graphics is mostly from bought packs.</p>
-										<a href="/mathrpg/MathRPG.html" class="special">Learn more</a>
-									</div>
-								</div>
-							</section>
-						
-					</section>
+        .nav-links a {
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text);
+            transition: color 0.2s;
+        }
 
-				<!-- Footer -->
-					<section id="footer">
-						<div class="inner">
-							<h2 class="major">Get in touch</h2>
-							<p>Nothing will happen below with the form.. but I guess I could makes something some day...</p>
-							<form method="post" action="#">
-								<div class="fields">
-									<div class="field">
-										<label for="name">Peter</label>
-										<input type="text" name="name" id="name" />
-									</div>
-									<div class="field">
-										<label for="email">Email</label>
-										<input type="email" name="email" id="email" />
-									</div>
-									<div class="field">
-										<label for="message">Message</label>
-										<textarea name="message" id="message" rows="4"></textarea>
-									</div>
-								</div>
-								<ul class="actions">
-									<li><input type="submit" value="Send Message" /></li>
-								</ul>
-							</form>
-							<ul class="contact">
-								<li class="icon solid fa-home">
-									Peter Oldhammer<br />
-								</li>
-								<li class="icon solid fa-envelope"><a href="#">peter.oldhammer(at)gmail.com</a></li>
-								<li class="icon brands fa-twitter"><a href="https://twitter.com/piddau">twitter.com/piddau</a></li>
-							</ul>
-							<ul class="copyright">
-								<li>&copy; Peter Oldhammer. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
-							</ul>
-						</div>
-					</section>
+        .nav-links a:hover { color: var(--cyan); }
 
-			</div>
+        /* ===================== HERO ===================== */
+        #hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+            padding: 2rem;
+        }
 
-		<!-- Scripts -->
-			<script src="assets/js/jquery.min.js"></script>
-			<script src="assets/js/jquery.scrollex.min.js"></script>
-			<script src="assets/js/browser.min.js"></script>
-			<script src="assets/js/breakpoints.min.js"></script>
-			<script src="assets/js/util.js"></script>
-			<script src="assets/js/main.js"></script>
+        /* Animated grid background */
+        #hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0,200,255,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,200,255,0.04) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: grid-drift 20s linear infinite;
+        }
 
-	</body>
+        @keyframes grid-drift {
+            0%   { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+        /* Radial glow behind text */
+        #hero::after {
+            content: '';
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
+            height: 400px;
+            background: radial-gradient(ellipse, rgba(0,200,255,0.07) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+        }
+
+        .hero-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--cyan);
+            margin-bottom: 1.5rem;
+            opacity: 0.8;
+        }
+
+        .hero-name {
+            font-size: clamp(2.8rem, 8vw, 6rem);
+            font-weight: 700;
+            color: var(--white);
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .hero-name span {
+            color: var(--cyan);
+            text-shadow: 0 0 40px rgba(0,200,255,0.4);
+        }
+
+        .hero-sub {
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            color: var(--text);
+            margin-bottom: 2.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .hero-sub .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: var(--cyan);
+            margin-left: 2px;
+            vertical-align: middle;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        .hero-cta {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+        }
+
+        .hero-cta:hover {
+            background: var(--cyan);
+            color: #000;
+            box-shadow: 0 0 30px rgba(0,200,255,0.3);
+        }
+
+        .scroll-hint {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            opacity: 0.35;
+            font-size: 0.65rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            z-index: 1;
+        }
+
+        .scroll-hint svg {
+            width: 18px;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(6px); }
+        }
+
+        /* ===================== SECTION HEADER ===================== */
+        .section-header {
+            text-align: center;
+            margin-bottom: 3.5rem;
+        }
+
+        .section-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--cyan);
+            opacity: 0.7;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-title {
+            font-size: clamp(1.8rem, 4vw, 2.8rem);
+            font-weight: 700;
+            color: var(--white);
+            letter-spacing: -0.02em;
+        }
+
+        /* ===================== PROJECTS ===================== */
+        #projects {
+            padding: 7rem 2rem;
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Featured card takes full width */
+        .project-card.featured {
+            grid-column: 1 / -1;
+        }
+
+        .project-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+        }
+
+        .project-card:hover {
+            border-color: var(--cyan-mid);
+            box-shadow: 0 0 40px rgba(0,200,255,0.06), 0 8px 40px rgba(0,0,0,0.4);
+            transform: translateY(-3px);
+        }
+
+        /* Image area */
+        .card-img-wrap {
+            position: relative;
+            overflow: hidden;
+            background: #060810;
+        }
+
+        .project-card:not(.featured) .card-img-wrap { height: 220px; }
+        .project-card.featured .card-img-wrap       { height: 380px; }
+
+        .card-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.4s ease, filter 0.4s ease;
+            filter: brightness(0.85) saturate(0.9);
+        }
+
+        .project-card:hover .card-img-wrap img {
+            transform: scale(1.04);
+            filter: brightness(1) saturate(1);
+        }
+
+        /* Overlay */
+        .card-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(7,9,15,0.9) 0%, transparent 50%);
+            display: flex;
+            align-items: flex-end;
+            padding: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .project-card:hover .card-overlay { opacity: 1; }
+
+        .play-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.2rem;
+            background: var(--cyan);
+            color: #000;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: box-shadow 0.2s;
+        }
+
+        .play-btn:hover { box-shadow: 0 0 20px rgba(0,200,255,0.5); }
+
+        /* Card body */
+        .card-body {
+            padding: 1.4rem 1.6rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .tag {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.62rem;
+            padding: 0.2rem 0.6rem;
+            border: 1px solid var(--border);
+            color: var(--text);
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border-radius: 2px;
+        }
+
+        .tag.engine {
+            border-color: rgba(0,200,255,0.3);
+            color: var(--cyan);
+            background: var(--cyan-dim);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.01em;
+        }
+
+        .project-card.featured .card-title { font-size: 1.6rem; }
+
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text);
+            line-height: 1.65;
+            flex: 1;
+            margin-bottom: 1.2rem;
+        }
+
+        .card-link {
+            align-self: flex-start;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: gap 0.2s;
+        }
+
+        .card-link:hover { gap: 0.7rem; }
+
+        /* ===================== DIVIDER ===================== */
+        .divider {
+            max-width: 1300px;
+            margin: 0 auto;
+            border: none;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ===================== FOOTER ===================== */
+        footer {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .footer-left .footer-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 0.3rem;
+        }
+
+        .footer-left p {
+            font-size: 0.82rem;
+            color: var(--text);
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+        .footer-right p {
+            font-size: 0.8rem;
+            color: #3a4a60;
+            margin-bottom: 0.4rem;
+        }
+
+        .footer-email {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--cyan);
+        }
+
+        .footer-copy {
+            width: 100%;
+            font-size: 0.72rem;
+            color: #2a3a50;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        /* ===================== RESPONSIVE ===================== */
+        @media (max-width: 768px) {
+            nav { padding: 1rem 1.5rem; }
+            .nav-links { gap: 1.2rem; }
+            #projects { padding: 5rem 1.2rem; }
+            .project-grid { grid-template-columns: 1fr; }
+            .project-card.featured .card-img-wrap { height: 240px; }
+            footer { padding: 3rem 1.2rem; flex-direction: column; }
+            .footer-right { text-align: left; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ======= NAV ======= -->
+<nav>
+    <span class="nav-logo">// piddau.dev</span>
+    <ul class="nav-links">
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#contact">Contact</a></li>
+    </ul>
+</nav>
+
+<!-- ======= HERO ======= -->
+<section id="hero">
+    <div class="hero-inner">
+        <p class="hero-label">Game Developer &mdash; Portfolio</p>
+        <h1 class="hero-name">Peter<br><span>Oldhammer</span></h1>
+        <p class="hero-sub">
+            Building games with Godot, Unreal &amp; more<span class="cursor"></span>
+        </p>
+        <a href="#projects" class="hero-cta">View Projects</a>
+    </div>
+    <div class="scroll-hint">
+        <span>Scroll</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12l7 7 7-7"/>
+        </svg>
+    </div>
+</section>
+
+<!-- ======= PROJECTS ======= -->
+<section id="projects">
+    <div class="section-header">
+        <p class="section-label">// selected work</p>
+        <h2 class="section-title">Projects</h2>
+    </div>
+
+    <div class="project-grid">
+
+        <!-- Memory Quest — featured -->
+        <article class="project-card featured">
+            <div class="card-img-wrap">
+                <img src="images/memory.png" alt="Memory Quest" loading="lazy">
+                <div class="card-overlay">
+                    <a href="https://piddau.itch.io/memory-quest" target="_blank" rel="noopener" class="play-btn">
+                        ▶ Play on itch.io
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-tags">
+                    <span class="tag engine">Godot Engine</span>
+                    <span class="tag">Board Game Adaptation</span>
+                </div>
+                <h3 class="card-title">Memory Quest</h3>
+                <p class="card-desc">Digital adaptation of a board game by an indie designer. Responsible for all programming and most of the design work. A full game with progression, rules fidelity and a polished interface.</p>
+                <a href="https://piddau.itch.io/memory-quest" target="_blank" rel="noopener" class="card-link">
+                    View on itch.io &rarr;
+                </a>
+            </div>
+        </article>
+
+        <!-- Ascension -->
+        <article class="project-card">
+            <div class="card-img-wrap">
+                <img src="images/ascension.png" alt="Ascension" loading="lazy">
+                <div class="card-overlay">
+                    <a href="https://piddau.itch.io/ascension" target="_blank" rel="noopener" class="play-btn">
+                        ▶ Play on itch.io
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-tags">
+                    <span class="tag engine">Unreal Engine 4</span>
+                    <span class="tag">Game Jam</span>
+                    <span class="tag">Hack &amp; Slash</span>
+                </div>
+                <h3 class="card-title">Ascension</h3>
+                <p class="card-desc">Built for Ludum Dare — top-down hack &amp; slash with split-screen co-op, basic AI and a level system. Post-jam: rewrote core systems in C++ and began Steam networking integration.</p>
+                <a href="https://piddau.itch.io/ascension" target="_blank" rel="noopener" class="card-link">
+                    View on itch.io &rarr;
+                </a>
+            </div>
+        </article>
+
+        <!-- Sir Jump! -->
+        <article class="project-card">
+            <div class="card-img-wrap">
+                <img src="images/sirjump.png" alt="Sir Jump!" loading="lazy">
+                <div class="card-overlay">
+                    <a href="https://piddau.itch.io/sirjump" target="_blank" rel="noopener" class="play-btn">
+                        ▶ Play on itch.io
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-tags">
+                    <span class="tag engine">GDevelop</span>
+                    <span class="tag">Platformer</span>
+                </div>
+                <h3 class="card-title">Sir Jump!</h3>
+                <p class="card-desc">A 2D sidescroller built as a deep-dive into GDevelop's event-based system. Handled everything from gameplay to level design — only borrowed some artwork.</p>
+                <a href="https://piddau.itch.io/sirjump" target="_blank" rel="noopener" class="card-link">
+                    View on itch.io &rarr;
+                </a>
+            </div>
+        </article>
+
+        <!-- 25 Years of Defense -->
+        <article class="project-card">
+            <div class="card-img-wrap">
+                <img src="images/tower.png" alt="25 Years of Defense" loading="lazy">
+                <div class="card-overlay">
+                    <a href="https://piddau.itch.io/25-years-of-defense" target="_blank" rel="noopener" class="play-btn">
+                        ▶ Play on itch.io
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-tags">
+                    <span class="tag engine">Godot · C#</span>
+                    <span class="tag">Game Jam</span>
+                    <span class="tag">Tower Defense</span>
+                </div>
+                <h3 class="card-title">25 Years of Defense</h3>
+                <p class="card-desc">Castle defense game made for an FZ game jam. Used as a vehicle to explore Godot's shader pipeline — players hold off waves of attackers across escalating rounds.</p>
+                <a href="https://piddau.itch.io/25-years-of-defense" target="_blank" rel="noopener" class="card-link">
+                    View on itch.io &rarr;
+                </a>
+            </div>
+        </article>
+
+        <!-- Math Quest -->
+        <article class="project-card">
+            <div class="card-img-wrap">
+                <img src="images/mathrpg.png" alt="Math Quest" loading="lazy">
+                <div class="card-overlay">
+                    <a href="/mathrpg/MathRPG.html" class="play-btn">
+                        ▶ Play in Browser
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-tags">
+                    <span class="tag engine">Browser</span>
+                    <span class="tag">Educational</span>
+                    <span class="tag">RPG</span>
+                </div>
+                <h3 class="card-title">Math Quest</h3>
+                <p class="card-desc">An educational RPG built for my son to make practising arithmetic actually fun. Full combat loop where solving maths problems powers your attacks. Art from commercial packs.</p>
+                <a href="/mathrpg/MathRPG.html" class="card-link">
+                    Play now &rarr;
+                </a>
+            </div>
+        </article>
+
+        <!-- Heaven's Gate -->
+        <article class="project-card">
+            <div class="card-img-wrap">
+                <img src="images/heavensgate.png" alt="Heaven's Gate" loading="lazy">
+                <div class="card-overlay">
+                    <a href="https://piddau.itch.io/heavens-gate" target="_blank" rel="noopener" class="play-btn">
+                        ▶ Play on itch.io
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="card-tags">
+                    <span class="tag engine">Godot</span>
+                    <span class="tag">Interactive Fiction</span>
+                    <span class="tag">2D</span>
+                </div>
+                <h3 class="card-title">Heaven's Gate</h3>
+                <p class="card-desc">A Papers Please-inspired jam game where you play as a heavenly gatekeeper. Examine documents, weigh souls, and decide who gets into heaven — and who doesn't. Made for FZ Game Jam 2025.</p>
+                <a href="https://piddau.itch.io/heavens-gate" target="_blank" rel="noopener" class="card-link">
+                    View on itch.io &rarr;
+                </a>
+            </div>
+        </article>
+
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ======= FOOTER ======= -->
+<footer id="contact">
+    <div class="footer-left">
+        <p class="footer-name">Peter Oldhammer</p>
+        <p>Game Developer &mdash; Kävlinge, Sweden</p>
+    </div>
+    <div class="footer-right">
+        <p>Get in touch</p>
+        <a href="mailto:peter.oldhammer@gmail.com" class="footer-email">peter.oldhammer@gmail.com</a>
+    </div>
+    <div class="footer-copy">
+        <span>&copy; 2025 Peter Oldhammer. All rights reserved.</span>
+        <span>Built from scratch &mdash; no templates</span>
+    </div>
+</footer>
+
+</body>
 </html>

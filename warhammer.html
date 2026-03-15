@@ -666,11 +666,11 @@
      *    4. Click Publish, copy the URL and paste it below
      *
      *  Expected columns (first row must be a header row):
-     *    name | faction | condition | price | description | image | sold
+     *    name | faction | condition | price | description | image | status
      *
      *  condition values : painted / primed / unpainted
-     *  image            : full URL to an image, or leave blank
-     *  sold             : TRUE or FALSE
+     *  image            : filename (e.g. mini.jpg) or full URL, or leave blank
+     *  status           : available (or blank) | booked | sold
      * ===================================================== */
     const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT_xFzOOd1GZujGJyoHP7xXUqNHDjYGlbkfHo5Hy7q3AdtYF86X0uuETXU-8QfnmFZCk7LwUaEl1wZM/pub?gid=0&single=true&output=csv'; // ← paste URL here
 
@@ -724,13 +724,11 @@
             const images = imgRaw.split('|').map(s => s.trim()).filter(Boolean)
                 .map(s => /^https?:\/\//i.test(s) ? s : `images/${s}`);
 
-            // Support both a 'status' column (sold/booked/available)
-            // and the old boolean 'sold' column (TRUE/FALSE)
-            const rawStatus = (row[col('status')] || '').toLowerCase().trim();
-            const rawSold   = (row[col('sold')]   || '').toUpperCase().trim();
+            // Read from 'status' column, falling back to 'sold' column
+            const rawStatus = (row[col('status')] || row[col('sold')] || '').toLowerCase().trim();
             let status = 'available';
-            if      (rawStatus === 'sold'   || rawSold === 'true') status = 'sold';
-            else if (rawStatus === 'booked' || rawStatus === 'reserved') status = 'booked';
+            if      (rawStatus === 'sold'   || rawStatus === 'true')               status = 'sold';
+            else if (rawStatus === 'booked' || rawStatus === 'reserved')           status = 'booked';
 
             return {
                 id:          i + 1,
