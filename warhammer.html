@@ -261,7 +261,6 @@
             position: absolute;
             top: 14px;
             right: -24px;
-            background: var(--blood-red);
             color: #fff;
             font-size: 0.65rem;
             font-weight: 600;
@@ -271,6 +270,8 @@
             transform: rotate(35deg);
             box-shadow: 0 2px 6px rgba(0,0,0,0.5);
         }
+        .sold-ribbon.status-sold   { background: var(--blood-red); }
+        .sold-ribbon.status-booked { background: #8a5a00; }
 
         /* Card body */
         .card-body {
@@ -340,10 +341,11 @@
         .sold-text {
             font-size: 0.75rem;
             font-weight: 600;
-            color: var(--blood-red);
             letter-spacing: 0.15em;
             text-transform: uppercase;
         }
+        .sold-text.status-sold   { color: var(--blood-red); }
+        .sold-text.status-booked { color: #c88000; }
 
         .buy-btn {
             display: inline-block;
@@ -721,6 +723,15 @@
             const imgRaw = row[col('image')] || '';
             const images = imgRaw.split('|').map(s => s.trim()).filter(Boolean)
                 .map(s => /^https?:\/\//i.test(s) ? s : `images/${s}`);
+
+            // Support both a 'status' column (sold/booked/available)
+            // and the old boolean 'sold' column (TRUE/FALSE)
+            const rawStatus = (row[col('status')] || '').toLowerCase().trim();
+            const rawSold   = (row[col('sold')]   || '').toUpperCase().trim();
+            let status = 'available';
+            if      (rawStatus === 'sold'   || rawSold === 'true') status = 'sold';
+            else if (rawStatus === 'booked' || rawStatus === 'reserved') status = 'booked';
+
             return {
                 id:          i + 1,
                 name:        row[col('name')]        || '',
@@ -729,7 +740,7 @@
                 price:       row[col('price')]       || '',
                 description: row[col('description')] || '',
                 images,
-                sold:        (row[col('sold')] || '').toUpperCase() === 'TRUE'
+                status
             };
         }).filter(item => item.name);
     }
@@ -773,7 +784,7 @@
             (activeFaction   === 'all' || i.faction   === activeFaction)
         );
 
-        const available = filtered.filter(i => !i.sold).length;
+        const available = filtered.filter(i => i.status === 'available').length;
         count.textContent = `${available} available (${filtered.length} total)`;
 
         if (filtered.length === 0) {
@@ -781,11 +792,13 @@
             return;
         }
 
+        const STATUS_LABELS = { sold: 'Sold', booked: 'Booked' };
+
         grid.innerHTML = filtered.map(item => `
-            <div class="card${item.sold ? ' is-sold' : ''}" data-condition="${escHtml(item.condition)}">
+            <div class="card${item.status !== 'available' ? ' is-sold' : ''}" data-condition="${escHtml(item.condition)}">
                 <div class="card-img-wrap" data-images="${escHtml(item.images.join('|'))}" data-name="${escHtml(item.name)}" onclick="openLightbox(this)">
                     ${cardImgHtml(item)}
-                    ${item.sold ? '<div class="sold-ribbon">Sold</div>' : ''}
+                    ${item.status !== 'available' ? `<div class="sold-ribbon status-${item.status}">${STATUS_LABELS[item.status]}</div>` : ''}
                 </div>
                 <div class="card-body">
                     <div class="card-tags">
@@ -796,7 +809,7 @@
                     <div class="card-desc">${escHtml(item.description)}</div>
                     <div class="card-footer">
                         <span class="price">${escHtml(formatPrice(item.price))}</span>
-                        ${item.sold ? '<span class="sold-text">Sold</span>' : ''}
+                        ${item.status !== 'available' ? `<span class="sold-text status-${item.status}">${STATUS_LABELS[item.status]}</span>` : ''}
                     </div>
                 </div>
             </div>
