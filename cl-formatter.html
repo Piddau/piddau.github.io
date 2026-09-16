@@ -173,6 +173,19 @@
   .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
   .copy-btn.copied { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
 
+  .chunk-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    font-size: 0.8rem;
+    border-top: 1px solid var(--line);
+  }
+  .chunk-row:first-child { border-top: none; }
+  .chunk-row .meta { color: var(--ink-dim); }
+  .chunk-row .btns { display: flex; gap: 6px; }
+  .chunk-row button { font-size: 0.74rem; padding: 4px 10px; }
+
   footer {
     margin-top: 14px;
     font-size: 0.78rem;
@@ -224,11 +237,10 @@
         </div>
       </div>
       <div id="warn-banner" style="display:none; padding:8px 14px; font-size:0.78rem; background:var(--group-bg); color:var(--danger); border-bottom:1px solid var(--line);"></div>
+      <div id="chunk-list" style="display:none; border-bottom:1px solid var(--line); background:var(--group-bg);"></div>
       <div id="output"></div>
     </div>
   </div>
-
-  <footer>Runs entirely in your browser — nothing is sent anywhere. Tweak the toggles above; the output updates as you type.</footer>
 </div>
 
 <script>
@@ -237,8 +249,72 @@ const output = document.getElementById('output');
 const inCount = document.getElementById('in-count');
 const outCount = document.getElementById('out-count');
 const warnBanner = document.getElementById('warn-banner');
+const chunkList = document.getElementById('chunk-list');
 const SLACK_SOFT_LIMIT = 4000;   // compose box starts splitting/behaving oddly around here
 const SLACK_HARD_LIMIT = 40000;  // Slack truncates a single message past this
+const CHUNK_TARGET = 3800;       // per-message target when splitting into multiple posts
+
+function getParsedEntries() {
+  const raw = input.value;
+  const lines = raw.split('\n').filter(l => l.trim().length > 0);
+  const entries = lines.map(parseLine).filter(Boolean);
+  const clean = optClean.checked;
+  entries.forEach(e => {
+    if (!e.unparsed) {
+      e.description = clean ? cleanDescription(e.description) : e.description.trim();
+    }
+  });
+  return { entries, lineCount: lines.length };
+}
+
+// Builds plain-text "blocks" that must never be split across two Slack messages:
+// one block per category group (when grouping) or per entry (when not), plus one for unparsed lines.
+function buildBlocks(entries) {
+  const group = optGroup.checked;
+  const bulletLine = (e) => `• \`${e.cl}\` *${e.user}* — ${e.description || '(no description)'}`;
+  const blocks = [];
+
+  if (group) {
+    const order = [];
+    const buckets = {};
+    entries.forEach(e => {
+      if (e.unparsed) return;
+      if (!buckets[e.category]) { buckets[e.category] = []; order.push(e.category); }
+      buckets[e.category].push(e);
+    });
+    order.forEach(cat => {
+      blocks.push(`*${cat}*\n` + buckets[cat].map(bulletLine).join('\n'));
+    });
+  } else {
+    entries.filter(e => !e.unparsed).forEach(e => blocks.push(bulletLine(e)));
+  }
+
+  const unparsed = entries.filter(e => e.unparsed);
+  if (unparsed.length) {
+    blocks.push(`_Couldn't parse:_\n` + unparsed.map(e => `• ${e.raw}`).join('\n'));
+  }
+  return blocks;
+}
+
+// Packs blocks into Slack-message-sized chunks without ever splitting a block in two.
+function packChunks(blocks, target) {
+  const chunks = [];
+  let current = [];
+  let currentLen = 0;
+  blocks.forEach(block => {
+    const addedLen = block.length + (current.length ? 2 : 0); // +2 for the blank-line join
+    if (current.length && currentLen + addedLen > target) {
+      chunks.push(current.join('\n\n'));
+      current = [block];
+      currentLen = block.length;
+    } else {
+      current.push(block);
+      currentLen += addedLen;
+    }
+  });
+  if (current.length) chunks.push(current.join('\n\n'));
+  return chunks.length ? chunks : [''];
+}
 const optGroup = document.getElementById('opt-group');
 const optClean = document.getElementById('opt-clean');
 const copyBtn = document.getElementById('copy-btn');
@@ -338,24 +414,14 @@ function parseLine(rawLine) {
 }
 
 function render() {
-  const raw = input.value;
-  const lines = raw.split('\n').filter(l => l.trim().length > 0);
-  inCount.textContent = `${lines.length} line${lines.length === 1 ? '' : 's'}`;
+  const { entries, lineCount } = getParsedEntries();
+  inCount.textContent = `${lineCount} line${lineCount === 1 ? '' : 's'}`;
 
-  const entries = lines.map(parseLine).filter(Boolean);
-  const clean = optClean.checked;
-  const group = optGroup.checked;
-
-  entries.forEach(e => {
-    if (!e.unparsed) {
-      e.description = clean ? cleanDescription(e.description) : e.description.trim();
-    }
-  });
-
-  let html = '';
-  const bulletLine = (e) =>
+  const htmlBulletLine = (e) =>
     `• <span class="cl">\`${e.cl}\`</span> <span class="who">${escapeHtml(e.user)}</span> — ${escapeHtml(e.description) || '<em>(no description)</em>'}`;
 
+  let html = '';
+  const group = optGroup.checked;
   if (group) {
     const order = [];
     const buckets = {};
@@ -366,100 +432,128 @@ function render() {
     });
     order.forEach(cat => {
       html += `<span class="grp">${escapeHtml(cat)}</span>\n`;
-      html += buckets[cat].map(bulletLine).join('\n') + '\n';
+      html += buckets[cat].map(htmlBulletLine).join('\n') + '\n';
     });
   } else {
-    html += entries.filter(e => !e.unparsed).map(bulletLine).join('\n') + '\n';
+    html += entries.filter(e => !e.unparsed).map(htmlBulletLine).join('\n') + '\n';
   }
-
   const unparsed = entries.filter(e => e.unparsed);
   if (unparsed.length) {
     html += `<span class="grp warn">Couldn't parse</span>\n`;
     html += unparsed.map(e => `<span class="warn">•</span> ${escapeHtml(e.raw)}`).join('\n');
   }
-
   output.innerHTML = html || '<span style="color:var(--ink-dim)">Paste your changelist rows on the left to see the formatted output here.</span>';
 
-  const plainLen = plainTextOutput().length;
+  const blocks = buildBlocks(entries);
+  const fullText = blocks.join('\n\n').trim();
+  const plainLen = fullText.length;
   outCount.textContent = `${plainLen.toLocaleString()} chars`;
-  if (plainLen > SLACK_HARD_LIMIT) {
+
+  if (plainLen > SLACK_SOFT_LIMIT) {
+    const chunks = packChunks(blocks, CHUNK_TARGET);
     warnBanner.style.display = 'block';
-    warnBanner.textContent = `Over Slack's ~40,000 character hard limit (${plainLen.toLocaleString()}) — this message will get truncated. Split it, e.g. one post per category.`;
-  } else if (plainLen > SLACK_SOFT_LIMIT) {
-    warnBanner.style.display = 'block';
-    warnBanner.textContent = `${plainLen.toLocaleString()} characters — past the point where Slack's compose box tends to split long messages. Consider posting it in a few chunks.`;
+    warnBanner.textContent = plainLen > SLACK_HARD_LIMIT
+      ? `Over Slack's ~40,000 character hard limit (${plainLen.toLocaleString()}) — split below into ${chunks.length} messages so nothing gets truncated.`
+      : `${plainLen.toLocaleString()} characters — past the point where Slack tends to split long messages. Split below into ${chunks.length} messages.`;
+    renderChunkList(chunks);
   } else {
     warnBanner.style.display = 'none';
+    chunkList.style.display = 'none';
+    chunkList.innerHTML = '';
   }
 }
 
-function plainTextOutput() {
-  // Rebuild without HTML tags, for copying (Slack mrkdwn uses *bold* and `code` literally).
-  const raw = input.value;
-  const lines = raw.split('\n').filter(l => l.trim().length > 0);
-  const entries = lines.map(parseLine).filter(Boolean);
-  const clean = optClean.checked;
-  const group = optGroup.checked;
-
-  entries.forEach(e => {
-    if (!e.unparsed) {
-      e.description = clean ? cleanDescription(e.description) : e.description.trim();
-    }
+function renderChunkList(chunks) {
+  chunkList.innerHTML = '';
+  chunks.forEach((text, i) => {
+    const row = document.createElement('div');
+    row.className = 'chunk-row';
+    row.innerHTML = `
+      <span class="meta">Message ${i + 1} of ${chunks.length} · ${text.length.toLocaleString()} chars</span>
+      <span class="btns">
+        <button type="button" class="copy-btn" data-action="copy">Copy</button>
+        <button type="button" class="copy-btn" data-action="open">Open in new window</button>
+      </span>`;
+    row.querySelector('[data-action="copy"]').addEventListener('click', (ev) => copyText(text, ev.currentTarget));
+    row.querySelector('[data-action="open"]').addEventListener('click', () => openChunkWindow(text, i + 1, chunks.length));
+    chunkList.appendChild(row);
   });
-
-  const bulletLine = (e) => `• \`${e.cl}\` *${e.user}* — ${e.description || '(no description)'}`;
-  let out = '';
-
-  if (group) {
-    const order = [];
-    const buckets = {};
-    entries.forEach(e => {
-      if (e.unparsed) return;
-      if (!buckets[e.category]) { buckets[e.category] = []; order.push(e.category); }
-      buckets[e.category].push(e);
-    });
-    order.forEach(cat => {
-      out += `*${cat}*\n`;
-      out += buckets[cat].map(bulletLine).join('\n') + '\n\n';
-    });
-  } else {
-    out += entries.filter(e => !e.unparsed).map(bulletLine).join('\n') + '\n';
-  }
-
-  const unparsed = entries.filter(e => e.unparsed);
-  if (unparsed.length) {
-    out += `_Couldn't parse:_\n`;
-    out += unparsed.map(e => `• ${e.raw}`).join('\n');
-  }
-  return out.trim();
+  chunkList.style.display = 'block';
 }
 
-copyBtn.addEventListener('click', async () => {
-  const text = plainTextOutput();
+async function copyText(text, btn) {
   try {
     await navigator.clipboard.writeText(text);
-    copyBtn.textContent = 'Copied!';
-    copyBtn.classList.add('copied');
   } catch (e) {
-    // Fallback for environments without clipboard API access.
     const ta = document.createElement('textarea');
     ta.value = text;
     document.body.appendChild(ta);
     ta.select();
     try { document.execCommand('copy'); } catch (err) {}
     document.body.removeChild(ta);
-    copyBtn.textContent = 'Copied!';
-    copyBtn.classList.add('copied');
   }
-  setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1400);
+  if (btn) {
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1400);
+  }
+}
+
+function openChunkWindow(text, idx, total) {
+  const w = window.open('', '_blank');
+  if (!w) {
+    alert('Your browser blocked the popup — allow popups for this page and try again.');
+    return;
+  }
+  const esc = escapeHtml(text);
+  w.document.open();
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>Message ${idx} of ${total}</title>
+<style>
+  body{margin:0;background:#15161a;color:#eae8e2;font-family:-apple-system,Segoe UI,sans-serif;}
+  .bar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid #33353a;}
+  .bar strong{font-size:0.9rem;}
+  button{padding:6px 14px;border-radius:6px;border:1px solid #444750;background:#1f2126;color:#eae8e2;font-size:13px;cursor:pointer;}
+  button.copied{background:#2f6f5e;border-color:#2f6f5e;}
+  textarea{display:block;width:100%;height:calc(100vh - 53px);box-sizing:border-box;border:none;background:#0e0f11;color:#eae8e2;padding:16px;font:13px/1.55 "SF Mono",ui-monospace,Menlo,Consolas,monospace;resize:none;outline:none;white-space:pre-wrap;}
+</style></head>
+<body>
+  <div class="bar"><strong>Message ${idx} of ${total}</strong><button id="cp" type="button">Copy</button></div>
+  <textarea id="ta" readonly>${esc}</textarea>
+  <script>
+    const ta = document.getElementById('ta');
+    ta.focus();
+    ta.select();
+    document.getElementById('cp').addEventListener('click', async function () {
+      const btn = this;
+      try { await navigator.clipboard.writeText(ta.value); }
+      catch (e) { ta.focus(); ta.select(); document.execCommand('copy'); }
+      const original = btn.textContent;
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(function () { btn.textContent = original; btn.classList.remove('copied'); }, 1200);
+    });
+  <\/script>
+</body></html>`);
+  w.document.close();
+}
+
+copyBtn.addEventListener('click', () => {
+  const { entries } = getParsedEntries();
+  const fullText = buildBlocks(entries).join('\n\n').trim();
+  copyText(fullText, copyBtn);
 });
 
 [input, optGroup, optClean].forEach(el => el.addEventListener('input', render));
 [patRemoveEl, patTruncateEl].forEach(el => el.addEventListener('input', () => { savePatterns(); render(); }));
 
-const sample = `* 11111 - user.name - [Some tag]Bla bla bla
-* 11112 - second.user - [Vfx] Bla bla la
-`;
+const sample = `* 100234 - alex.nguyen - [Cl 99012033 by sam patel in main branch]enable fallback shadow cache when a material requests it (integrated fix from vendor sdk) Added new cvar to allow the material system to request the fallback cache directly rather than relying on the global setting. Defaults to false to preserve existing behavior. #rb morgan.lee #tests Verified in a fresh scene with three material types #Synced-CL Unknown
+* 100238 - priya.shah - [Audio] - Reworked footstep layering on gravel and metal, plus a volume pass on the ambient wind loop #validation successful
+* 100251 - jordan.kim - [Vfx] Frost trail cleanup pass #validation successful
+* 100266 - jordan.kim - [Vfx] retimed particle fade on impact effect #validation successful
+* 100271 - casey.brooks - [Animation][Golem]  Idle-to-walk blend tightened, removed foot slide #validation successful
+* 100288 - drew.oconnor - [Group][Matchmaking] UMatchComponent::Server_QueueUpdated_Implementation - keep players in the queue state until the server confirms the swap, so a dropped ack doesn't leave someone stuck as "searching" while actually placed. #rb T.Alvarez #PreSubmit  #UserApproved_Local Up To Date #UserApproved_Other Files Checked Out #PreSubmit_processes Reconcile, Compile Editor (Development), Compile Game  (Development) Shark Validation, Illegal Code Words, Matching Header Included First Verify SDK, Compile Game Client (Development), Compile Game Client (Shipping) Compile Game Server (Development), Compile Game Server (Shipping) :)
+* 100299 - jordan.kim - [Vfx] corruption polish pass on golem death effect #validation successful`;
 loadPatterns();
 input.value = sample;
 render();
