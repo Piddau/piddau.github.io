@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Changelist → Slack Formatter</title>
+<style>
+  :root {
+    --bg: #f6f5f2;
+    --panel: #ffffff;
+    --ink: #1e1d1b;
+    --ink-dim: #6b6862;
+    --line: #ddd9d1;
+    --accent: #2f6f5e;
+    --accent-ink: #ffffff;
+    --code-bg: #eef0ea;
+    --group-bg: #f1efe9;
+    --danger: #a4442f;
+    font-family: -apple-system, "Segoe UI", Inter, Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17181a;
+      --panel: #202226;
+      --ink: #e9e7e1;
+      --ink-dim: #93908a;
+      --line: #35373b;
+      --accent: #5fae97;
+      --accent-ink: #0f1210;
+      --code-bg: #2a2c2f;
+      --group-bg: #24262a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17181a;
+    --panel: #202226;
+    --ink: #e9e7e1;
+    --ink-dim: #93908a;
+    --line: #35373b;
+    --accent: #5fae97;
+    --accent-ink: #0f1210;
+    --code-bg: #2a2c2f;
+    --group-bg: #24262a;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 28px 20px 60px;
+  }
+  .wrap {
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  header {
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: 1.15rem;
+    font-weight: 650;
+    margin: 0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  header p {
+    margin: 0;
+    color: var(--ink-dim);
+    font-size: 0.88rem;
+    max-width: 62ch;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    align-items: center;
+    margin: 16px 0 18px;
+    padding: 12px 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.86rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .pane {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .pane-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .pane-head h2 {
+    font-size: 0.76rem;
+    text-transform: none;
+    margin: 0;
+    font-weight: 650;
+    color: var(--ink-dim);
+  }
+  .count {
+    font-size: 0.74rem;
+    color: var(--ink-dim);
+  }
+
+  textarea {
+    flex: 1;
+    min-height: 480px;
+    resize: vertical;
+    border: none;
+    background: transparent;
+    color: var(--ink);
+    padding: 14px;
+    font: 13px/1.55 "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    outline: none;
+  }
+  textarea::placeholder { color: var(--ink-dim); }
+
+  #output {
+    padding: 14px;
+    font: 13px/1.6 "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-y: auto;
+    min-height: 480px;
+    flex: 1;
+  }
+  #output .grp {
+    font-weight: 700;
+    color: var(--accent);
+    margin-top: 14px;
+    display: block;
+  }
+  #output .grp:first-child { margin-top: 0; }
+  #output .cl { color: var(--ink-dim); }
+  #output .who { font-weight: 600; }
+  #output .warn { color: var(--danger); }
+
+  .copy-btn {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--ink);
+    font-size: 0.78rem;
+    padding: 5px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+  }
+  .copy-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .copy-btn.copied { border-color: var(--accent); background: var(--accent); color: var(--accent-ink); }
+
+  footer {
+    margin-top: 14px;
+    font-size: 0.78rem;
+    color: var(--ink-dim);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Changelist → Slack Formatter</h1>
+    <p>Paste the raw changelist list on the left. It groups the entries, cleans up the build/validation boilerplate, and gives you Slack-ready markdown on the right — just copy and paste into the channel.</p>
+  </header>
+
+  <div class="controls">
+    <label class="toggle"><input type="checkbox" id="opt-group" checked> Group by category</label>
+    <label class="toggle"><input type="checkbox" id="opt-clean" checked> Strip build/validation boilerplate</label>
+    <button class="copy-btn" id="patterns-toggle" type="button">Edit noise patterns</button>
+  </div>
+
+  <div class="controls" id="patterns-panel" style="display:none; flex-direction:column; align-items:stretch; gap:12px;">
+    <div>
+      <div style="font-size:0.8rem; font-weight:650; margin-bottom:4px;">Delete this phrase, keep the rest of the line</div>
+      <div style="font-size:0.76rem; color:var(--ink-dim); margin-bottom:6px;">One per line. Good for standalone noise like a smiley or a fixed status phrase.</div>
+      <textarea id="pat-remove" style="min-height:80px; border:1px solid var(--line); border-radius:8px; padding:8px; font-size:12px;"></textarea>
+    </div>
+    <div>
+      <div style="font-size:0.8rem; font-weight:650; margin-bottom:4px;">Cut everything from this tag to the end of the line</div>
+      <div style="font-size:0.76rem; color:var(--ink-dim); margin-bottom:6px;">One per line. Good for a tag that always kicks off a trailing checklist dump.</div>
+      <textarea id="pat-truncate" style="min-height:80px; border:1px solid var(--line); border-radius:8px; padding:8px; font-size:12px;"></textarea>
+    </div>
+    <div style="font-size:0.74rem; color:var(--ink-dim);">Saved in this browser automatically — add a new tag here whenever one shows up in your data.</div>
+  </div>
+
+  <div class="grid">
+    <div class="pane">
+      <div class="pane-head">
+        <h2>Raw input</h2>
+        <span class="count" id="in-count">0 lines</span>
+      </div>
+      <textarea id="input" placeholder="* 864462 - jakub.duracz - [Cl 48852044 by rob krajcarski in ue5-main branch]enable global df generation...&#10;* 864466 - thomas.volpe - [Audio] - Updating Grenade In Air Loop...&#10;..."></textarea>
+    </div>
+    <div class="pane">
+      <div class="pane-head">
+        <h2>Slack output</h2>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="count" id="out-count">0 chars</span>
+          <button class="copy-btn" id="copy-btn">Copy</button>
+        </div>
+      </div>
+      <div id="warn-banner" style="display:none; padding:8px 14px; font-size:0.78rem; background:var(--group-bg); color:var(--danger); border-bottom:1px solid var(--line);"></div>
+      <div id="output"></div>
+    </div>
+  </div>
+
+  <footer>Runs entirely in your browser — nothing is sent anywhere. Tweak the toggles above; the output updates as you type.</footer>
+</div>
+
+<script>
+const input = document.getElementById('input');
+const output = document.getElementById('output');
+const inCount = document.getElementById('in-count');
+const outCount = document.getElementById('out-count');
+const warnBanner = document.getElementById('warn-banner');
+const SLACK_SOFT_LIMIT = 4000;   // compose box starts splitting/behaving oddly around here
+const SLACK_HARD_LIMIT = 40000;  // Slack truncates a single message past this
+const optGroup = document.getElementById('opt-group');
+const optClean = document.getElementById('opt-clean');
+const copyBtn = document.getElementById('copy-btn');
+const patternsToggle = document.getElementById('patterns-toggle');
+const patternsPanel = document.getElementById('patterns-panel');
+const patRemoveEl = document.getElementById('pat-remove');
+const patTruncateEl = document.getElementById('pat-truncate');
+
+const DEFAULT_REMOVE = ['#validation successful', '#PreSubmit', ':)'];
+const DEFAULT_TRUNCATE = ['#PreSubmit_processes', '#UserApproved_Local', '#UserApproved_Other', '#Synced-CL'];
+
+function loadPatterns() {
+  let remove = DEFAULT_REMOVE, truncate = DEFAULT_TRUNCATE;
+  try {
+    const savedRemove = localStorage.getItem('clfmt.patRemove');
+    const savedTruncate = localStorage.getItem('clfmt.patTruncate');
+    if (savedRemove !== null) remove = savedRemove.split('\n').filter(x => x.trim());
+    if (savedTruncate !== null) truncate = savedTruncate.split('\n').filter(x => x.trim());
+  } catch (e) { /* storage unavailable - fall back to defaults */ }
+  patRemoveEl.value = remove.join('\n');
+  patTruncateEl.value = truncate.join('\n');
+}
+
+function savePatterns() {
+  try {
+    localStorage.setItem('clfmt.patRemove', patRemoveEl.value);
+    localStorage.setItem('clfmt.patTruncate', patTruncateEl.value);
+  } catch (e) { /* storage unavailable - edits just won't persist across visits */ }
+}
+
+patternsToggle.addEventListener('click', () => {
+  const showing = patternsPanel.style.display !== 'none';
+  patternsPanel.style.display = showing ? 'none' : 'flex';
+  patternsToggle.textContent = showing ? 'Edit noise patterns' : 'Hide noise patterns';
+});
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function cleanDescription(text) {
+  let t = text;
+  const removeList = patRemoveEl.value.split('\n').map(s => s.trim()).filter(Boolean);
+  const truncateList = patTruncateEl.value.split('\n').map(s => s.trim()).filter(Boolean);
+
+  truncateList.forEach(tag => {
+    const re = new RegExp(escapeRegex(tag) + '[\\s\\S]*$', 'i');
+    t = t.replace(re, '');
+  });
+  removeList.forEach(tag => {
+    const re = new RegExp(escapeRegex(tag), 'gi');
+    t = t.replace(re, '');
+  });
+
+  t = t.replace(/\s{2,}/g, ' ').trim();
+  t = t.replace(/^[-–—\s]+/, '').trim();
+  return t;
+}
+
+function parseLine(rawLine) {
+  const line = rawLine.trim();
+  if (!line) return null;
+
+  const m = line.match(/^\*?\s*(\d{3,})\s*-\s*([\w.\-]+)\s*-\s*(.*)$/);
+  if (!m) {
+    return { unparsed: true, raw: line };
+  }
+  const [, cl, user, remainder] = m;
+  let rest = remainder.trim();
+
+  const tags = [];
+  let bracketMatch;
+  while ((bracketMatch = rest.match(/^\s*\[([^\]]*)\]/))) {
+    tags.push(bracketMatch[1].trim());
+    rest = rest.slice(bracketMatch[0].length);
+  }
+  // some lines have a stray leading "- " after the bracket tags
+  rest = rest.replace(/^\s*-\s*/, '').trim();
+
+  let category, description;
+  if (tags.length === 0) {
+    category = 'Other';
+    description = rest;
+  } else if (/^cl\s+\d+/i.test(tags[0])) {
+    category = 'Integration';
+    description = `[${tags[0]}] ${rest}`.trim();
+  } else {
+    category = tags.join(' · ');
+    description = rest;
+  }
+
+  return { cl, user, category, description };
+}
+
+function render() {
+  const raw = input.value;
+  const lines = raw.split('\n').filter(l => l.trim().length > 0);
+  inCount.textContent = `${lines.length} line${lines.length === 1 ? '' : 's'}`;
+
+  const entries = lines.map(parseLine).filter(Boolean);
+  const clean = optClean.checked;
+  const group = optGroup.checked;
+
+  entries.forEach(e => {
+    if (!e.unparsed) {
+      e.description = clean ? cleanDescription(e.description) : e.description.trim();
+    }
+  });
+
+  let html = '';
+  const bulletLine = (e) =>
+    `• <span class="cl">\`${e.cl}\`</span> <span class="who">${escapeHtml(e.user)}</span> — ${escapeHtml(e.description) || '<em>(no description)</em>'}`;
+
+  if (group) {
+    const order = [];
+    const buckets = {};
+    entries.forEach(e => {
+      if (e.unparsed) return;
+      if (!buckets[e.category]) { buckets[e.category] = []; order.push(e.category); }
+      buckets[e.category].push(e);
+    });
+    order.forEach(cat => {
+      html += `<span class="grp">${escapeHtml(cat)}</span>\n`;
+      html += buckets[cat].map(bulletLine).join('\n') + '\n';
+    });
+  } else {
+    html += entries.filter(e => !e.unparsed).map(bulletLine).join('\n') + '\n';
+  }
+
+  const unparsed = entries.filter(e => e.unparsed);
+  if (unparsed.length) {
+    html += `<span class="grp warn">Couldn't parse</span>\n`;
+    html += unparsed.map(e => `<span class="warn">•</span> ${escapeHtml(e.raw)}`).join('\n');
+  }
+
+  output.innerHTML = html || '<span style="color:var(--ink-dim)">Paste your changelist rows on the left to see the formatted output here.</span>';
+
+  const plainLen = plainTextOutput().length;
+  outCount.textContent = `${plainLen.toLocaleString()} chars`;
+  if (plainLen > SLACK_HARD_LIMIT) {
+    warnBanner.style.display = 'block';
+    warnBanner.textContent = `Over Slack's ~40,000 character hard limit (${plainLen.toLocaleString()}) — this message will get truncated. Split it, e.g. one post per category.`;
+  } else if (plainLen > SLACK_SOFT_LIMIT) {
+    warnBanner.style.display = 'block';
+    warnBanner.textContent = `${plainLen.toLocaleString()} characters — past the point where Slack's compose box tends to split long messages. Consider posting it in a few chunks.`;
+  } else {
+    warnBanner.style.display = 'none';
+  }
+}
+
+function plainTextOutput() {
+  // Rebuild without HTML tags, for copying (Slack mrkdwn uses *bold* and `code` literally).
+  const raw = input.value;
+  const lines = raw.split('\n').filter(l => l.trim().length > 0);
+  const entries = lines.map(parseLine).filter(Boolean);
+  const clean = optClean.checked;
+  const group = optGroup.checked;
+
+  entries.forEach(e => {
+    if (!e.unparsed) {
+      e.description = clean ? cleanDescription(e.description) : e.description.trim();
+    }
+  });
+
+  const bulletLine = (e) => `• \`${e.cl}\` *${e.user}* — ${e.description || '(no description)'}`;
+  let out = '';
+
+  if (group) {
+    const order = [];
+    const buckets = {};
+    entries.forEach(e => {
+      if (e.unparsed) return;
+      if (!buckets[e.category]) { buckets[e.category] = []; order.push(e.category); }
+      buckets[e.category].push(e);
+    });
+    order.forEach(cat => {
+      out += `*${cat}*\n`;
+      out += buckets[cat].map(bulletLine).join('\n') + '\n\n';
+    });
+  } else {
+    out += entries.filter(e => !e.unparsed).map(bulletLine).join('\n') + '\n';
+  }
+
+  const unparsed = entries.filter(e => e.unparsed);
+  if (unparsed.length) {
+    out += `_Couldn't parse:_\n`;
+    out += unparsed.map(e => `• ${e.raw}`).join('\n');
+  }
+  return out.trim();
+}
+
+copyBtn.addEventListener('click', async () => {
+  const text = plainTextOutput();
+  try {
+    await navigator.clipboard.writeText(text);
+    copyBtn.textContent = 'Copied!';
+    copyBtn.classList.add('copied');
+  } catch (e) {
+    // Fallback for environments without clipboard API access.
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch (err) {}
+    document.body.removeChild(ta);
+    copyBtn.textContent = 'Copied!';
+    copyBtn.classList.add('copied');
+  }
+  setTimeout(() => { copyBtn.textContent = 'Copy'; copyBtn.classList.remove('copied'); }, 1400);
+});
+
+[input, optGroup, optClean].forEach(el => el.addEventListener('input', render));
+[patRemoveEl, patTruncateEl].forEach(el => el.addEventListener('input', () => { savePatterns(); render(); }));
+
+const sample = `* 864462 - jakub.duracz - [Cl 48852044 by rob krajcarski in ue5-main branch]enable global df generation if any material uses it (integrated fix from epic p4) Added new cvar to allow for the material or niagara use of the GDF to be sufficient to prepare the GDF (rather than being reliant on the DistanceFieldAO feature).  Defaults to false to preserve existing behavior. #rb stu.mckenna #tests Created new project and added a niagara system and switched it's collision behavior #Synced-CL Unknown
+* 864466 - thomas.volpe - [Audio] - Updating Grenade In Air Loop, as well as mix tweaks to Mosquito Idle vocals and flying SFX #validation successful
+* 864481 - runa.elwyn - [Vfx] Corruption Exo #validation successful
+* 864511 - runa.elwyn - [Vfx] moved assets #validation successful
+* 864515 - rebecka.karlsson - [Animation][Mosquito]  Leaning, start & stop tweaking for mosquito #validation successful
+* 864546 - emil.hansson - [Group][Online] USgPartyComponent::Server_TokenUpdated_Implementation - let the leave path run on world servers too, so a group-membership change is detected rigth away and not leave a member that has left the group being still in the squad. #rb JB #PreSubmit  #UserApproved_Local Up To Date #UserApproved_Other Files Checked Out #PreSubmit_processes Reconcile, Compile Editor (Development), Compile Game  (Development) Shark Validation, Illegal Code Words, Matching Header Included First Verify SDK, Compile Game Client (Development), Compile Game Client (Shipping) Compile Game Server (Development), Compile Game Server (Shipping) :)
+* 864551 - runa.elwyn - [Vfx] corruption polish #validation successful`;
+loadPatterns();
+input.value = sample;
+render();
+</script>
+</body>
+</html>
