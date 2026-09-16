@@ -457,13 +457,9 @@ copyBtn.addEventListener('click', async () => {
 [input, optGroup, optClean].forEach(el => el.addEventListener('input', render));
 [patRemoveEl, patTruncateEl].forEach(el => el.addEventListener('input', () => { savePatterns(); render(); }));
 
-const sample = `* 864462 - jakub.duracz - [Cl 48852044 by rob krajcarski in ue5-main branch]enable global df generation if any material uses it (integrated fix from epic p4) Added new cvar to allow for the material or niagara use of the GDF to be sufficient to prepare the GDF (rather than being reliant on the DistanceFieldAO feature).  Defaults to false to preserve existing behavior. #rb stu.mckenna #tests Created new project and added a niagara system and switched it's collision behavior #Synced-CL Unknown
-* 864466 - thomas.volpe - [Audio] - Updating Grenade In Air Loop, as well as mix tweaks to Mosquito Idle vocals and flying SFX #validation successful
-* 864481 - runa.elwyn - [Vfx] Corruption Exo #validation successful
-* 864511 - runa.elwyn - [Vfx] moved assets #validation successful
-* 864515 - rebecka.karlsson - [Animation][Mosquito]  Leaning, start & stop tweaking for mosquito #validation successful
-* 864546 - emil.hansson - [Group][Online] USgPartyComponent::Server_TokenUpdated_Implementation - let the leave path run on world servers too, so a group-membership change is detected rigth away and not leave a member that has left the group being still in the squad. #rb JB #PreSubmit  #UserApproved_Local Up To Date #UserApproved_Other Files Checked Out #PreSubmit_processes Reconcile, Compile Editor (Development), Compile Game  (Development) Shark Validation, Illegal Code Words, Matching Header Included First Verify SDK, Compile Game Client (Development), Compile Game Client (Shipping) Compile Game Server (Development), Compile Game Server (Shipping) :)
-* 864551 - runa.elwyn - [Vfx] corruption polish #validation successful`;
+const sample = `* 11111 - user.name - [Some tag]Bla bla bla
+* 11112 - second.user - [Vfx] Bla bla la
+`;
 loadPatterns();
 input.value = sample;
 render();
