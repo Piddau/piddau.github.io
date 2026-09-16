@@ -203,6 +203,7 @@
   <div class="controls">
     <label class="toggle"><input type="checkbox" id="opt-group" checked> Group by category</label>
     <label class="toggle"><input type="checkbox" id="opt-clean" checked> Strip build/validation boilerplate</label>
+    <label class="toggle"><input type="checkbox" id="opt-dedupe" checked> Remove duplicate CL numbers</label>
     <button class="copy-btn" id="patterns-toggle" type="button">Edit noise patterns</button>
   </div>
 
@@ -257,14 +258,26 @@ const CHUNK_TARGET = 3800;       // per-message target when splitting into multi
 function getParsedEntries() {
   const raw = input.value;
   const lines = raw.split('\n').filter(l => l.trim().length > 0);
-  const entries = lines.map(parseLine).filter(Boolean);
+  let entries = lines.map(parseLine).filter(Boolean);
   const clean = optClean.checked;
+
+  let dupeCount = 0;
+  if (optDedupe.checked) {
+    const seen = new Set();
+    entries = entries.filter(e => {
+      if (e.unparsed) return true; // no CL to key on, leave as-is
+      if (seen.has(e.cl)) { dupeCount++; return false; }
+      seen.add(e.cl);
+      return true;
+    });
+  }
+
   entries.forEach(e => {
     if (!e.unparsed) {
       e.description = clean ? cleanDescription(e.description) : e.description.trim();
     }
   });
-  return { entries, lineCount: lines.length };
+  return { entries, lineCount: lines.length, dupeCount };
 }
 
 // Builds plain-text "blocks" that must never be split across two Slack messages:
@@ -317,6 +330,7 @@ function packChunks(blocks, target) {
 }
 const optGroup = document.getElementById('opt-group');
 const optClean = document.getElementById('opt-clean');
+const optDedupe = document.getElementById('opt-dedupe');
 const copyBtn = document.getElementById('copy-btn');
 const patternsToggle = document.getElementById('patterns-toggle');
 const patternsPanel = document.getElementById('patterns-panel');
@@ -414,8 +428,10 @@ function parseLine(rawLine) {
 }
 
 function render() {
-  const { entries, lineCount } = getParsedEntries();
-  inCount.textContent = `${lineCount} line${lineCount === 1 ? '' : 's'}`;
+  const { entries, lineCount, dupeCount } = getParsedEntries();
+  inCount.textContent = dupeCount
+    ? `${lineCount} lines · ${dupeCount} duplicate${dupeCount === 1 ? '' : 's'} removed`
+    : `${lineCount} line${lineCount === 1 ? '' : 's'}`;
 
   const htmlBulletLine = (e) =>
     `• <span class="cl">\`${e.cl}\`</span> <span class="who">${escapeHtml(e.user)}</span> — ${escapeHtml(e.description) || '<em>(no description)</em>'}`;
@@ -544,7 +560,7 @@ copyBtn.addEventListener('click', () => {
   copyText(fullText, copyBtn);
 });
 
-[input, optGroup, optClean].forEach(el => el.addEventListener('input', render));
+[input, optGroup, optClean, optDedupe].forEach(el => el.addEventListener('input', render));
 [patRemoveEl, patTruncateEl].forEach(el => el.addEventListener('input', () => { savePatterns(); render(); }));
 
 const sample = `* 100234 - alex.nguyen - [Cl 99012033 by sam patel in main branch]enable fallback shadow cache when a material requests it (integrated fix from vendor sdk) Added new cvar to allow the material system to request the fallback cache directly rather than relying on the global setting. Defaults to false to preserve existing behavior. #rb morgan.lee #tests Verified in a fresh scene with three material types #Synced-CL Unknown
