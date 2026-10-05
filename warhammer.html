@@ -1,13 +1,14 @@
 <!DOCTYPE HTML>
 <!--
-    Warhammer 40,000 Sales Page
+    Warhammer Sales Page — 40,000 and Age of Sigmar
     Part of piddau.github.io
 -->
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-    <title>Warhammer 40K Sales</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Painted and unpainted Warhammer 40,000 and Age of Sigmar miniatures for sale. Prices exclude shipping." />
+    <title>Warhammer Sales — 40,000 &amp; Age of Sigmar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Exo+2:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
@@ -99,12 +100,33 @@
             margin-bottom: 0.3rem;
         }
 
+        .header-systems {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 0.35rem 0.85rem;
+            margin-top: 0.85rem;
+            font-family: 'Cinzel', serif;
+            font-size: clamp(0.8rem, 2.2vw, 1.15rem);
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--light);
+        }
+
+        .system-divider {
+            color: var(--gold);
+            opacity: 0.55;
+            letter-spacing: 0;
+        }
+
         .header-subtitle {
             font-size: 0.9rem;
             letter-spacing: 0.3em;
             text-transform: uppercase;
             color: var(--text);
-            margin-top: 0.8rem;
+            margin-top: 0.85rem;
         }
 
         .aquila {
@@ -299,9 +321,30 @@
         }
 
         .tag-faction  { background: rgba(139,0,0,0.25); border-color: #5a0000; color: #e07070; }
+        .tag-40k      { background: rgba(201,168,76,0.12); border-color: var(--border-gold); color: var(--gold); }
+        .tag-aos      { background: rgba(30,80,110,0.35); border-color: #1e4a62; color: #7ec8d4; }
         .tag-painted  { background: rgba(20,80,20,0.35); border-color: #1e5a1e; color: #70c070; }
         .tag-primed   { background: rgba(80,80,20,0.35); border-color: #5a5a1e; color: #c0c060; }
         .tag-unpainted{ background: rgba(50,50,70,0.35); border-color: #38384a; color: #8888aa; }
+
+        .game-heading {
+            grid-column: 1 / -1;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin: 0.25rem 0 0;
+            padding-bottom: 0.55rem;
+            border-bottom: 1px solid var(--border-gold);
+        }
+
+        .game-heading.game-aos {
+            color: #7ec8d4;
+            border-bottom-color: #1e4a62;
+            margin-top: 1.35rem;
+        }
 
         .card-name {
             font-family: 'Cinzel', serif;
@@ -609,19 +652,30 @@
 <!-- ======= HEADER ======= -->
 <header>
     <div class="header-eyebrow">Collection Clearance Sale</div>
-    <span class="aquila" title="Aquila">⚜</span>
-    <h1>Warhammer 40,000</h1>
+    <span class="aquila" aria-hidden="true">⚜</span>
+    <h1>Warhammer</h1>
+    <p class="header-systems">
+        <span>40,000</span>
+        <span class="system-divider" aria-hidden="true">·</span>
+        <span>Age of Sigmar</span>
+    </p>
     <p class="header-subtitle">Miniatures &amp; Models for Sale</p>
 </header>
 
 <!-- ======= FILTER BAR ======= -->
+<div class="filter-bar">
+    <span class="filter-label">Game:</span>
+    <button class="filter-btn active" data-game="all">All</button>
+    <button class="filter-btn" data-game="40k">40,000</button>
+    <button class="filter-btn" data-game="aos">Age of Sigmar</button>
+    <span class="item-count" id="item-count"></span>
+</div>
 <div class="filter-bar">
     <span class="filter-label">Condition:</span>
     <button class="filter-btn active" data-condition="all">All</button>
     <button class="filter-btn" data-condition="painted">Painted</button>
     <button class="filter-btn" data-condition="primed">Primed</button>
     <button class="filter-btn" data-condition="unpainted">Unpainted</button>
-    <span class="item-count" id="item-count"></span>
 </div>
 <div class="filter-bar" id="faction-bar" style="display:none">
     <span class="filter-label">Faction:</span>
@@ -634,9 +688,16 @@
 
 </div>
 
+<!-- ======= RESERVE ======= -->
+<section class="contact-section">
+    <h2>Reserve a model</h2>
+    <p>Message me to reserve a miniature. Prices exclude shipping.</p>
+    <a class="contact-btn" href="mailto:peter.oldhammer@gmail.com?subject=Reserve%20a%20miniature">Message me to reserve</a>
+</section>
+
 <!-- ======= FOOTER ======= -->
 <footer>
-    <p>&larr; <a href="index.html">Back to Portfolio</a> &nbsp;|&nbsp; All prices exclude shipping &nbsp;|&nbsp; Gothenburg, Sweden</p>
+    <p>&larr; <a href="index.html">Back to Portfolio</a></p>
 </footer>
 
 <!-- ======= LIGHTBOX ======= -->
@@ -666,10 +727,15 @@
      *    4. Click Publish, copy the URL and paste it below
      *
      *  Expected columns (first row must be a header row):
-     *    name | faction | condition | price | description | image | status
+     *    name | game | faction | condition | price | description | image | status
      *
+     *  game values      : 40k | aos
+     *                     40k also accepts 40,000 / 40.000 / wh40k / warhammer 40k
+     *                     aos also accepts age of sigmar / sigmar
+     *                     A blank cell, or a sheet with no game column, is treated as 40k.
      *  condition values : painted / primed / unpainted
      *  image            : filename (e.g. mini.jpg) or full URL, or leave blank
+     *                     Several images: separate filenames with |
      *  status           : available (or blank) | booked | sold
      * ===================================================== */
     const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT_xFzOOd1GZujGJyoHP7xXUqNHDjYGlbkfHo5Hy7q3AdtYF86X0uuETXU-8QfnmFZCk7LwUaEl1wZM/pub?gid=0&single=true&output=csv'; // ← paste URL here
@@ -679,10 +745,26 @@
        ========================================================= */
 
     const CONDITION_LABELS = { painted: 'Painted', primed: 'Primed', unpainted: 'Unpainted' };
+    const GAME_LABELS = { '40k': '40,000', aos: 'Age of Sigmar' };
+    const GAME_SHORT  = { '40k': '40K', aos: 'AoS' };
+    const GAME_ORDER  = ['40k', 'aos'];
 
     let ALL_ITEMS = [];
+    let activeGame      = 'all';
     let activeCondition = 'all';
     let activeFaction   = 'all';
+
+    // Blank or missing game stays 40k so the current sheet keeps working.
+    function normalizeGame(raw) {
+        const s = String(raw || '').toLowerCase().trim();
+        if (!s) return '40k';
+        const compact = s.replace(/[\s._,\-]+/g, '');
+        if (compact === 'aos' || compact === 'ageofsigmar' || compact === 'warhammeraos' || compact === 'whaos' || compact === 'sigmar') return 'aos';
+        if (compact === '40k' || compact === '40000' || compact === 'wh40k' || compact === 'warhammer40k' || compact === 'warhammer40000') return '40k';
+        if (s.includes('sigmar') || /\baos\b/.test(s)) return 'aos';
+        if (/40\s*[,.]?\s*000|\b40k\b|40000/.test(s)) return '40k';
+        return '40k';
+    }
 
     // ---- CSV parser (handles quoted fields with commas/newlines) ----
     function parseCSV(text) {
@@ -730,9 +812,12 @@
             if      (rawStatus === 'sold'   || rawStatus === 'true')               status = 'sold';
             else if (rawStatus === 'booked' || rawStatus === 'reserved')           status = 'booked';
 
+            const gameCol = col('game') !== -1 ? col('game') : col('system');
+
             return {
                 id:          i + 1,
                 name:        row[col('name')]        || '',
+                game:        normalizeGame(gameCol === -1 ? '' : row[gameCol]),
                 faction:     row[col('faction')]     || '',
                 condition:   (row[col('condition')] || '').toLowerCase(),
                 price:       row[col('price')]       || '',
@@ -773,33 +858,27 @@
     }
 
     // ---- Render ----
-    function renderGrid() {
-        const grid  = document.getElementById('product-grid');
-        const count = document.getElementById('item-count');
-
-        const filtered = ALL_ITEMS.filter(i =>
+    function filteredItems() {
+        return ALL_ITEMS.filter(i =>
+            (activeGame      === 'all' || i.game      === activeGame) &&
             (activeCondition === 'all' || i.condition === activeCondition) &&
             (activeFaction   === 'all' || i.faction   === activeFaction)
         );
+    }
 
-        const available = filtered.filter(i => i.status === 'available').length;
-        count.textContent = `${available} available (${filtered.length} total)`;
-
-        if (filtered.length === 0) {
-            grid.innerHTML = `<div class="no-results">No items found for this filter.</div>`;
-            return;
-        }
-
+    function cardHtml(item) {
         const STATUS_LABELS = { sold: 'Sold', booked: 'Booked' };
-
-        grid.innerHTML = filtered.map(item => `
-            <div class="card${item.status !== 'available' ? ' is-sold' : ''}" data-condition="${escHtml(item.condition)}">
+        const gameLabel = GAME_SHORT[item.game] || item.game;
+        const gameTitle = GAME_LABELS[item.game] || item.game;
+        return `
+            <div class="card${item.status !== 'available' ? ' is-sold' : ''}" data-game="${escHtml(item.game)}" data-condition="${escHtml(item.condition)}">
                 <div class="card-img-wrap" data-images="${escHtml(item.images.join('|'))}" data-name="${escHtml(item.name)}" onclick="openLightbox(this)">
                     ${cardImgHtml(item)}
                     ${item.status !== 'available' ? `<div class="sold-ribbon status-${item.status}">${STATUS_LABELS[item.status]}</div>` : ''}
                 </div>
                 <div class="card-body">
                     <div class="card-tags">
+                        <span class="tag tag-${escHtml(item.game)}" title="${escHtml(gameTitle)}">${escHtml(gameLabel)}</span>
                         <span class="tag tag-faction">${escHtml(item.faction)}</span>
                         <span class="tag tag-${escHtml(item.condition)}">${escHtml(CONDITION_LABELS[item.condition] || item.condition)}</span>
                     </div>
@@ -810,8 +889,40 @@
                         ${item.status !== 'available' ? `<span class="sold-text status-${item.status}">${STATUS_LABELS[item.status]}</span>` : ''}
                     </div>
                 </div>
-            </div>
-        `).join('');
+            </div>`;
+    }
+
+    function emptyMessage() {
+        const onlyGame = activeGame !== 'all' && activeCondition === 'all' && activeFaction === 'all';
+        if (onlyGame) return `No ${GAME_LABELS[activeGame]} miniatures listed yet.`;
+        return 'No items found for this filter.';
+    }
+
+    function renderGrid() {
+        const grid  = document.getElementById('product-grid');
+        const count = document.getElementById('item-count');
+        const filtered = filteredItems();
+
+        const available = filtered.filter(i => i.status === 'available').length;
+        count.textContent = filtered.length
+            ? `${available} available (${filtered.length} total)`
+            : '';
+
+        if (filtered.length === 0) {
+            grid.innerHTML = `<div class="no-results">${emptyMessage()}</div>`;
+            return;
+        }
+
+        const gamesPresent = GAME_ORDER.filter(g => filtered.some(i => i.game === g));
+        if (activeGame === 'all' && gamesPresent.length > 1) {
+            grid.innerHTML = gamesPresent.map(g => `
+                <h2 class="game-heading game-${g}">${GAME_LABELS[g]}</h2>
+                ${filtered.filter(i => i.game === g).map(cardHtml).join('')}
+            `).join('');
+            return;
+        }
+
+        grid.innerHTML = filtered.map(cardHtml).join('');
     }
 
     function showLoading() {
@@ -854,15 +965,30 @@
         }
     }
 
-    // ---- Faction bar (built after data loads) ----
+    // ---- Faction bar (rebuilt when the game filter changes) ----
     function buildFactionBar() {
-        const factions = [...new Set(ALL_ITEMS.map(i => i.faction).filter(Boolean))].sort();
-        if (factions.length === 0) return;
+        const factions = [...new Set(
+            ALL_ITEMS
+                .filter(i => activeGame === 'all' || i.game === activeGame)
+                .map(i => i.faction)
+                .filter(Boolean)
+        )].sort((a, b) => a.localeCompare(b, 'en'));
+
+        const bar = document.getElementById('faction-bar');
+        if (factions.length === 0) {
+            activeFaction = 'all';
+            bar.style.display = 'none';
+            return;
+        }
+
+        if (activeFaction !== 'all' && !factions.includes(activeFaction)) activeFaction = 'all';
 
         const container = document.getElementById('faction-btns');
         container.innerHTML =
-            `<button class="filter-btn active" data-faction="all">All</button>` +
-            factions.map(f => `<button class="filter-btn" data-faction="${escHtml(f)}">${escHtml(f)}</button>`).join('');
+            `<button class="filter-btn${activeFaction === 'all' ? ' active' : ''}" data-faction="all">All</button>` +
+            factions.map(f =>
+                `<button class="filter-btn${f === activeFaction ? ' active' : ''}" data-faction="${escHtml(f)}">${escHtml(f)}</button>`
+            ).join('');
 
         container.querySelectorAll('.filter-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -873,13 +999,22 @@
             });
         });
 
-        document.getElementById('faction-bar').style.display = '';
+        bar.style.display = '';
     }
 
-    // Condition filter buttons
-    document.querySelectorAll('[data-condition]').forEach(btn => {
+    document.querySelectorAll('.filter-btn[data-game]').forEach(btn => {
         btn.addEventListener('click', () => {
-            document.querySelectorAll('[data-condition]').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.filter-btn[data-game]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            activeGame = btn.dataset.game;
+            buildFactionBar();
+            renderGrid();
+        });
+    });
+
+    document.querySelectorAll('.filter-btn[data-condition]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn[data-condition]').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             activeCondition = btn.dataset.condition;
             renderGrid();
